@@ -1,24 +1,17 @@
-#!/usr/bin/env python3
-"""Copy entry.png into the directory the harness grades.
+"""Deliver the rendered poster to the grading output folder.
 
-The picture is rendered ahead of time by generate.py; the graded run
-has no network and may not have Pillow, so this entrypoint only moves
-bytes from beside itself into the output folder.
-"""
+generate.py draws entry.png ahead of time. The grading sandbox has no
+network access and no Pillow, so this entrypoint only copies the finished
+bytes to the location the harness reads."""
 import os
-import shutil
-import sys
+from pathlib import Path
 
 
-def place_image():
-    """Put entry.png where the harness looks for it, return exit code."""
-    here = os.path.dirname(os.path.abspath(__file__))
-    source = os.path.join(here, "entry.png")
-    target_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    os.makedirs(target_dir, exist_ok=True)
-    shutil.copyfile(source, os.path.join(target_dir, "entry.png"))
-    return 0
+def deliver():
+    root = Path(__file__).resolve().parent
+    out = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "entry.png").write_bytes((root / "entry.png").read_bytes())
 
 
-if __name__ == "__main__":
-    sys.exit(place_image())
+deliver()
